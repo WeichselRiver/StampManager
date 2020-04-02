@@ -2,9 +2,11 @@
 
 {% block body %}
 
-    <h1>Briefmarken Altdeutschland</h1>
-    {% for article in articles %}
-        {{article.title}} <br>
-    {% endfor %}
+    <h1>Briefmarken - Sammelgebiete</h1>
+    <ul class="list-group">
+        {% for article in articles %}
+            <li class="list-group-item"><a href="article">{{article.title}}</a></li> 
+        {% endfor %}
+    </ul>
 
 {% endblock %}

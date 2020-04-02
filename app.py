@@ -17,6 +17,10 @@ def about():
 def articles():
     return render_template('articles.html', articles = Articles)
 
+@app.route('/article')
+def article():
+    return render_template('article.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
