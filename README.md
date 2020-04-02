@@ -5,5 +5,5 @@ Next steps:
 - program youtube flask blog example
 - adjust for stamp collection
 - have form to add stamps
-- make statistics (complete years, timeplot)
+- make statistics (complete years, sets, single stamps, colors, timeplot)
 
