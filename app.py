@@ -4,6 +4,8 @@ from forms import RegistrationForm, LoginForm
 from data import Articles
 from datetime import datetime
 
+Articles = Articles()
+
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'e86448051b5cedf049dec758cc706ae4'
