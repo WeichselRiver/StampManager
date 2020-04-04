@@ -1,0 +1,11 @@
+Start:
+
+cmd
+cd StampMananger
+activate Stamp1
+View: Command Palette:Select Interpreter Stamp1, Python 3.8.
+python app.py
+
+ToDo:
+- new layout using bootstrap starter template
+
