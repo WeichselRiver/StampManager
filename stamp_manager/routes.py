@@ -3,6 +3,7 @@ from stamp_manager import app, db, bcrypt
 from stamp_manager.forms import RegistrationForm, LoginForm
 from stamp_manager.models import User, Post
 from stamp_manager.data import Articles
+from flask_login import login_user
 
 
 Articles = Articles()
@@ -40,8 +41,6 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        
-
         flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
@@ -51,8 +50,9 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        if form.email.data == 'c.weichsel@gmx.de' and form.password.data == 'password':
-            flash(f'You have logged in !', 'success')
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
             return redirect(url_for('home'))
         else:
             flash(f'Login not successful!', 'danger')
