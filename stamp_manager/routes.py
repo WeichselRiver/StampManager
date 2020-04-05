@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, url_for
-from stamp_manager import app
+from stamp_manager import app, db, bcrypt
 from stamp_manager.forms import RegistrationForm, LoginForm
 from stamp_manager.models import User, Post
 from stamp_manager.data import Articles
@@ -33,8 +33,17 @@ def article(title):
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(
+            form.password.data).decode('utf-8')
+        user = User(username=form.username.data,
+                    email=form.email.data, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+
+        
+
         flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
 
