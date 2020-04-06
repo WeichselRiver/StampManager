@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request
 from stamp_manager import app, db, bcrypt
-from stamp_manager.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from stamp_manager.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from stamp_manager.models import User, Post
 from stamp_manager.data import Articles
 from flask_login import login_user, current_user, logout_user, login_required
@@ -15,7 +15,8 @@ Articles = Articles()
 @app.route('/')
 @app.route('/home')
 def home():
-    return render_template('home.html', title="Home")
+    posts = Post.query.all()
+    return render_template('home.html', title="Home", posts = posts)
 
 
 @app.route('/about')
@@ -91,6 +92,7 @@ def save_picture(form_picture):
 def account():
     form = UpdateAccountForm()
     if form.validate_on_submit():
+
         if form.picture.data:
             picture_file = save_picture(form.picture.data) # call function above
             current_user.image_file = picture_file # update picture
@@ -105,3 +107,16 @@ def account():
 
     image_file = url_for('static', filename="pics/" + current_user.image_file)
     return render_template('account.html', title='Account', image_file=image_file, form=form)
+
+
+@app.route("/post/new", methods=['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title = form.title.data, content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('You post has been created', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_post.html', title='New Post', form=form)
