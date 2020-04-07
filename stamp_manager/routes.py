@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, abort
 from stamp_manager import app, db, bcrypt
 from stamp_manager.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from stamp_manager.models import User, Post
@@ -16,7 +16,7 @@ Articles = Articles()
 @app.route('/home')
 def home():
     posts = Post.query.all()
-    return render_template('home.html', title="Home", posts = posts)
+    return render_template('home.html', title="Home", posts=posts)
 
 
 @app.route('/about')
@@ -75,12 +75,16 @@ def logout():
     return redirect(url_for('home'))
 
 # funtion to save updated picture and return filename as random hex
+
+
 def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename) # get extension from orig file
-    picture_fn = random_hex + f_ext # build new filename
-    picture_path = os.path.join(app.root_path, 'static/pics', picture_fn) # build new filepath
-    output_size=(125,125)
+    # get extension from orig file
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext  # build new filename
+    picture_path = os.path.join(
+        app.root_path, 'static/pics', picture_fn)  # build new filepath
+    output_size = (125, 125)
     i = Image.open(form_picture)
     i.thumbnail(output_size)
     i.save(picture_path)
@@ -94,10 +98,11 @@ def account():
     if form.validate_on_submit():
 
         if form.picture.data:
-            picture_file = save_picture(form.picture.data) # call function above
-            current_user.image_file = picture_file # update picture
-        current_user.username = form.username.data # update username
-        current_user.email = form.email.data # update email
+            picture_file = save_picture(
+                form.picture.data)  # call function above
+            current_user.image_file = picture_file  # update picture
+        current_user.username = form.username.data  # update username
+        current_user.email = form.email.data  # update email
         db.session.commit()
         flash('Account updated', 'success')
         return redirect(url_for('account'))
@@ -114,9 +119,36 @@ def account():
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
-        post = Post(title = form.title.data, content=form.content.data, author=current_user)
+        post = Post(title=form.title.data,
+                    content=form.content.data, author=current_user)
         db.session.add(post)
         db.session.commit()
         flash('You post has been created', 'success')
         return redirect(url_for('home'))
-    return render_template('create_post.html', title='New Post', form=form)
+    return render_template('create_post.html', title='New Post', form=form, legend='New Post')
+
+
+@app.route("/post/<int:post_id>")
+def post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
+
+
+@app.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Post updated', 'success')
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+        return render_template('create_post.html', title='Update Post', form=form, legend='Update Post')
+
