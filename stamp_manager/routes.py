@@ -15,7 +15,8 @@ Articles = Articles()
 @app.route('/')
 @app.route('/home')
 def home():
-    posts = Post.query.all()
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
     return render_template('home.html', title="Home", posts=posts)
 
 
@@ -152,6 +153,7 @@ def update_post(post_id):
         form.content.data = post.content
         return render_template('create_post.html', title='Update Post', form=form, legend='Update Post')
 
+
 @app.route("/post/<int:post_id>/delete", methods=['GET', 'POST'])
 @login_required
 def delete_post(post_id):
@@ -160,5 +162,14 @@ def delete_post(post_id):
         abort(403)
     db.session.delete(post)
     db.session.commit()
-    flash('Your post has been deleted','success')
+    flash('Your post has been deleted', 'success')
     return redirect(url_for('home'))
+
+
+
+@app.route('/user/<string:username>')
+def user_post(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
+    return render_template('home.html', title="Home", posts=posts)
