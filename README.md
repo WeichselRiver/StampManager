@@ -10,3 +10,7 @@ Next steps:
 - have form to add stamps
 - make statistics (complete years, sets, single stamps, colors, timeplot)
 
+
+# 911
+- o : 2
+- ** : 2
